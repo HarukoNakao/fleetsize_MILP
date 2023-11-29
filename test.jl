@@ -37,7 +37,7 @@ include("save_output.jl")
 # Create the DataFrame to store the output
 column_names = ["BKobj", "GAP_LB", "GV", "EV", "CCO2", "TotalChargeTime", "Runtime"]
 keyoutput_sum = DataFrame(; [(Symbol(name)) => Float64[] for name in column_names]...)
-n_customer = 20 #chose the number of requests 
+n_customer = 10 #chose the number of requests 
     input_request = folderName * "c_$(n_customer).csv" 
     MaxCO2 = vec_MaxCO2[Int64(1)]#set the max CO2 emission
 
@@ -46,5 +46,5 @@ n_customer = 20 #chose the number of requests
    
     nodes_output = dummy_create(total_num, n_charger_dummies, requestInfo, chargerInfo, xyInfo, coordinates_info, vehicle_par)
     arcs_output = Arcs_create(nodes_output, vehicle_par.v_k, total_num.n_c)
-    #arcs_processed = preprocess_new(arcs_output, nodes_output.nodes_tw, nodes_output.nodesPU,nodes_output.nodes_od,nodes_output.max_travel_time,nodes_output.nodesDO)
-    arcs_processed = preprocess(arcs_output, nodes_output.nodes_tw)
+    arcs_processed = preprocess_new(arcs_output, nodes_output.nodes_tw, nodes_output.PUnodes,nodes_output.nodes_od,nodes_output.max_travel_time,nodes_output.DOnodes)
+    #arcs_processed = preprocess(arcs_output, nodes_output.nodes_tw)
