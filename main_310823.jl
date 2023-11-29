@@ -12,7 +12,7 @@ const MOI = MathOptInterface
 
 #set the name of folder storing the input data
 folderName = "data_fleet_11082023_3\\"
-Resultfolder = "resutls_11082023\\instance3\\CO2_50%\\"
+Resultfolder = "result\\"
 
 #Input 
 per_init = 0.5 #scaling initial chargig state from max capacity
@@ -44,7 +44,7 @@ column_names = ["BKobj", "GAP_LB", "GV", "EV", "CCO2", "TotalChargeTime", "Runti
 keyoutput_sum = DataFrame(; [(Symbol(name)) => Float64[] for name in column_names]...)
 
 
-for ite in 1:5
+for ite in 1
     n_customer = ite*10 #chose the number of requests 
     input_request = folderName * "c_$(n_customer).csv" 
     MaxCO2 = vec_MaxCO2[Int64(ite)]#set the max CO2 emission
@@ -57,6 +57,8 @@ for ite in 1:5
     nodes_output = dummy_create(total_num, n_charger_dummies, requestInfo, chargerInfo, xyInfo, coordinates_info, vehicle_par)
     arcs_output = Arcs_create(nodes_output, vehicle_par.v_k, total_num.n_c)
     arcs_processed = preprocess(arcs_output, nodes_output.nodes_tw)
+    #arcs_processed = preprocess_new(arcs_output, nodes_output.nodes_tw, nodes_output.nodesPU,nodes_output.nodes_od,nodes_output.max_travel_time,nodes_output.nodesDO)
+ 
     keyoutput_vec = MILP_new(arcs_processed,
      arcs_output, nodes_output, charger_par, vehicle_par, total_num, flag_new_formulation,
      cputimelimit, MaxCO2, TargetCO2,chargerInfo,requestInfo, xyInfo,Resultfolder,nodes_output.nodes_coordinates,coordinates_info)
