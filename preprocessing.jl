@@ -62,7 +62,7 @@ function preprocess_new(Arcs_output, nodes_tw, PUnodes, nodes_od, max_travel_tim
             end
         end
     end
-
+    
     #preproessing 3 
     for ite in 1:length(Arcs)
         if Arcs[ite][1] in PUnodes && Arcs[ite][2] in DOnodes
@@ -74,29 +74,39 @@ function preprocess_new(Arcs_output, nodes_tw, PUnodes, nodes_od, max_travel_tim
                 #Check if the travel time from i to j + from j to n_i and service time exceed max ride time
                 if travel_time[(j, i)] + travel_time[(i, n_j)] + travel_time[(n_j, n_i)] > max_travel_time[key_1]
                     push!(index_delete, ite)
+                else 
+                    #check if the time window constraints for j and i are satisfied
+                    early_origin_j = nodes_tw[j][1]
+                    late_dest_j = nodes_tw[n_j][2]
+                    early_origin_i = nodes_tw[i][1]
+                    late_dest_i = nodes_tw[n_i][2]
+
+                    if late_dest_j < travel_time[(j, i)] + travel_time[(i,n_j)] + early_origin_j ||
+                        late_dest_i < travel_time[(i, n_j)] + travel_time[(n_j, n_i)] + early_origin_i
+                        push!(index_delete, ite)
+                    end
+
                 end
-            else
-                push!(index_delete, ite)
             end
         end
     end
-#=
-    #preproessing 4 ; synmetry of preprocessing 3
-    index_delete_4 = Int64[]
+    
+
+    #preproessing 4
     for ite in 1:length(Arcs)
 
         if Arcs[ite][1] in DOnodes && Arcs[ite][2] in PUnodes
             n_i = Arcs[ite][1]
             j = Arcs[ite][2]
-            i, key_1 = find_first_element(nodes_od, n_i)
-            n_j, key_2 = find_second_element(nodes_od, j)
-                #Check if the travel time from i to j + from j to n_i and service time exceed max ride time
-                if travel_time[(i, n_i)] + travel_time[(n_i, j)] + travel_time[(j, n_j)] > max_travel_time[key_1]
-                    push!(index_delete_4, ite)
-                end
+            #check if the time window constraints for j and i are satisfied
+                    early_dest_i = nodes_tw[n_i][1]
+                    late_origin_j = nodes_tw[j][2]
+                    if late_origin_j < travel_time[(n_i, j)] + early_dest_i
+                        push!(index_delete, ite)
+                    end
         end
     end
-=#
+
     #preproessing 5
     for ite in 1:length(Arcs)
         if Arcs[ite][1] in PUnodes && Arcs[ite][2] in PUnodes
@@ -109,9 +119,20 @@ function preprocess_new(Arcs_output, nodes_tw, PUnodes, nodes_od, max_travel_tim
                 if travel_time[(i, j)] + travel_time[(j, n_i)] + travel_time[(n_i, n_j)] > max_travel_time[key_1] &&
                    travel_time[(i, j)] + travel_time[(j, n_j)] + travel_time[(n_j, n_i)] > max_travel_time[key_1]
                     push!(index_delete, ite)
+                else#check if the time window constraints for j and i are satisfied
+                    early_origin_j = nodes_tw[j][1]
+                    late_dest_j = nodes_tw[n_j][2]
+                    early_origin_i = nodes_tw[i][1]
+                    late_dest_i = nodes_tw[n_i][2]
+
+                    if late_dest_j < travel_time[(j, n_i)] + travel_time[(n_i,n_j)] + early_origin_j ||
+                        late_dest_i < travel_time[(i, j)] + travel_time[(j, n_i)] + early_origin_i ||
+                        late_dest_i< travel_time[(i,j)] + travel_time[(j,n_j)] + travel_time[(n_j,n_i)] +early_origin_i ||
+
+                        push!(index_delete, ite)
+                    end
+
                 end
-            else
-                push!(index_delete, ite)
             end
         end
     end
@@ -129,9 +150,20 @@ function preprocess_new(Arcs_output, nodes_tw, PUnodes, nodes_od, max_travel_tim
                   travel_time[(j,i)] + travel_time[(i, n_j)] + travel_time[(n_i, n_j)] > max_travel_time[key_1]
 
                     push!(index_delete, ite)
+
+                else#check if the time window constraints for j and i are satisfied
+                    early_origin_j = nodes_tw[j][1]
+                    late_dest_j = nodes_tw[n_j][2]
+                    early_origin_i = nodes_tw[i][1]
+                    late_dest_i = nodes_tw[n_i][2]
+
+                    if late_dest_j < travel_time[(j, n_i)] + travel_time[(n_i,n_j)] + early_origin_j ||
+                        late_dest_i < travel_time[(i, j)] + travel_time[(j, n_i)] + early_origin_i ||
+                        late_dest_j< travel_time[(j,i)] + travel_time[(i,n_i)] + travel_time[(n_i,n_j)] +early_origin_j ||
+                        
+                        push!(index_delete, ite)
+                    end
                 end
-            else
-                push!(index_delete, ite)
             end
         end
     end

@@ -11,7 +11,7 @@ using MathOptInterface#using Pkg; Pkg.update("Gurobi") # to update gurobi
 const MOI = MathOptInterface
 
 #set the name of folder storing the input data
-folderName = "data_fleet_11082023_3\\"
+folderName = "data_fleet_09022023\\"
 Resultfolder = "result\\"
 
 #Input 
@@ -20,11 +20,11 @@ TargetCO2 = 50#% of CO2 emission compared to the max CO2 emission
 flag_new_formulation = true
 n_charger_dummies = 3 #number of dummy chargers 
 #CO2 emission only with GVs 
-#vec_MaxCO2 = [26.3277762667357, 39.139795180004, 58.2477553979516, 72.9762773663471, 87.3587645957791]
+vec_MaxCO2 = [26.3277762667357, 39.139795180004, 58.2477553979516, 72.9762773948294, 85.5717411149149]
 #instance2
 #vec_MaxCO2 = [21.8930173652438,36.5589008311427,62.9433663262955,71.9737296321299,93.9748123267374]
 #instnace 3 
-vec_MaxCO2= [22.6820614802309,41.1723393162971,53.8177880600278,77.071818292654,93.8145726117127]
+#vec_MaxCO2= [22.6820614802309,41.1723393162971,53.8177880600278,77.071818292654,93.8145726117127]
 
 cputimelimit = 4*60 #[min] time limit for solving the problem
 requests_set = [10, 20, 30, 40, 50] #number of requests
@@ -44,7 +44,7 @@ column_names = ["BKobj", "GAP_LB", "GV", "EV", "CCO2", "TotalChargeTime", "Runti
 keyoutput_sum = DataFrame(; [(Symbol(name)) => Float64[] for name in column_names]...)
 
 
-for ite in 2
+for ite in 2:length(requests_set)
     n_customer = ite*10 #chose the number of requests 
     input_request = folderName * "c_$(n_customer).csv" 
     MaxCO2 = vec_MaxCO2[Int64(ite)]#set the max CO2 emission
