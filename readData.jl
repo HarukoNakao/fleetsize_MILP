@@ -92,7 +92,7 @@ end
 
 # Create the VehicleInfo structure
 vehicle_par = VehiclePar(Q_max, E_max, E_min, E_init, beta, PC, EnergyP, emission, μ, v_k)
-
+@show(vehicle_par)
 ##################################
 # Chargers specification parameters   
 ###################################

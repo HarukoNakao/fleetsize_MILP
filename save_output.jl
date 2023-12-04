@@ -2,13 +2,13 @@ function process_results(
     chargerInfo, nodes_coordinates,
     requestInfo, xyInfo, x_init,y_init,
     n_bs, n_ts, n_c, n_k, n_kg, TargetCO2,
-    Arcs, dist, resultfolder,x,nodes,
+    Arcs, dist, Resultfolder,x,nodes,
     Q,B,E,tau,nodes_charger,emission,nodes_bs,nodes_ts
     )
 
-### set the name for resultsfolder
-Resultfolder = resultfolder * "c_$(n_c)\\"
-
+    ### set the name for resultsfolder
+    # Resultfolder = resultfolder * "c_$(n_c)\\"
+    # Resultfolder = resultfolder 
 
     """
        #summarise and store the results 
@@ -31,20 +31,20 @@ Resultfolder = resultfolder * "c_$(n_c)\\"
     println("Charge time: $(charge_time)")
 
     #save the outputs as txt file 
-    rightnow = Dates.format(Dates.now(), "yyyy_mm_dd_HHMMSS")
-    fn_buspath = Resultfolder * string("BusPath_", n_bs, "bs_", n_c, "c_", n_k, "v_", n_kg, "gv_", TargetCO2, "%CO2_", rightnow)
-    #fn_arriveT = Resultfolder * string("ArriveT_", n_bs, "bs_", n_c, "c_", n_k, "v_", n_kg, "gv_", MaxCO2, "%CO2_", rightnow)
-    fn_serviceBT = Resultfolder * string("ServeBeginT_", n_bs, "bs_", n_c, "c_", n_k, "v_", n_kg, "gv_", TargetCO2, "%CO2_", rightnow)
-    fn_SOC = Resultfolder * string("SOC_", n_bs, "bs_", n_c, "c_", n_k, "v_", n_kg, "gv_", TargetCO2, "%CO2_", rightnow)
-    fn_COL = Resultfolder * string("COL_", n_bs, "bs_", n_c, "c_", n_k, "v_", n_kg, "gv_", TargetCO2, "%CO2_", rightnow)
-    fn_CT = Resultfolder * string("ChargeT_", n_bs, "bs_", n_c, "c_", n_k, "v_", n_kg, "gv_", TargetCO2, "%CO2_", rightnow)
+    # rightnow = Dates.format(Dates.now(), "yyyy_mm_dd_HHMMSS")
+    # fn_buspath = Resultfolder * string("BusPath_", n_bs, "bs_", n_c, "c_", n_k, "v_", n_kg, "gv_", TargetCO2, "%CO2_", rightnow)
+    # #fn_arriveT = Resultfolder * string("ArriveT_", n_bs, "bs_", n_c, "c_", n_k, "v_", n_kg, "gv_", MaxCO2, "%CO2_", rightnow)
+    # fn_serviceBT = Resultfolder * string("ServeBeginT_", n_bs, "bs_", n_c, "c_", n_k, "v_", n_kg, "gv_", TargetCO2, "%CO2_", rightnow)
+    # fn_SOC = Resultfolder * string("SOC_", n_bs, "bs_", n_c, "c_", n_k, "v_", n_kg, "gv_", TargetCO2, "%CO2_", rightnow)
+    # fn_COL = Resultfolder * string("COL_", n_bs, "bs_", n_c, "c_", n_k, "v_", n_kg, "gv_", TargetCO2, "%CO2_", rightnow)
+    # fn_CT = Resultfolder * string("ChargeT_", n_bs, "bs_", n_c, "c_", n_k, "v_", n_kg, "gv_", TargetCO2, "%CO2_", rightnow)
     
-    writedlm(fn_buspath, bus_path) #save bus path 
-    #writedlm(fn_arriveT, arrival_time) #save arrival time
-    writedlm(fn_serviceBT, service_begin_time)
-    writedlm(fn_SOC, state_of_charge) #save state of charge
-    writedlm(fn_COL, change_of_load) #save the change of load 
-    writedlm(fn_CT, charge_time) #save charge time 
+    # writedlm(fn_buspath, bus_path) #save bus path 
+    # #writedlm(fn_arriveT, arrival_time) #save arrival time
+    # writedlm(fn_serviceBT, service_begin_time)
+    # writedlm(fn_SOC, state_of_charge) #save state of charge
+    # writedlm(fn_COL, change_of_load) #save the change of load 
+    # writedlm(fn_CT, charge_time) #save charge time 
     
     #Creates the summary table 
     nodes_reqID = Dict(nodes_bs .=> requestInfo[:, "id_request"])
@@ -63,11 +63,13 @@ Resultfolder = resultfolder * "c_$(n_c)\\"
                 push!(bus_stops, 3333333)
             end
         end
-        summary = DataFrame(id_request=bus_path[k], bs=bus_stops, change_of_load=change_of_load[k], service_time=service_begin_time[k], distance=dist_path[k])
+        # summary = DataFrame(id_request=bus_path[k], bs=bus_stops, change_of_load=change_of_load[k], service_time=service_begin_time[k], distance=dist_path[k])
         #fn_summary = Resultfolder * string("Summary_Vehicle#",k,"_",n_bs, "bs_", n_c, "c_", n_k, "v_", n_kg, "gv_", MaxCO2, "%CO2_", rightnow)
-        fn_summary_csv = Resultfolder * string("Summary_Vehicle#", k, "_", n_bs, "bs_", n_c, "c_", n_k, "v_", n_kg, "gv_", TargetCO2, "%CO2_", rightnow, ".csv")
+        # fn_summary_csv = Resultfolder * string("Summary_Vehicle#", k, "_", n_bs, "bs_", n_c, "c_", n_k, "v_", n_kg, "gv_", TargetCO2, "%CO2_", rightnow, ".csv")
+        # fn_summary_csv = Resultfolder  
+      
         #writedlm(fn_summary, summary) 
-        CSV.write(fn_summary_csv, summary)
+        # CSV.write(fn_summary_csv, summary)
 
     end
     
