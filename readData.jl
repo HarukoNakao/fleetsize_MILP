@@ -78,7 +78,9 @@ emission = Float64[]
 μ = per_set[1, "service_time"]  # Service time per person
 v_k = per_set[1, "vehicle_speed"]  # Bus speed km/min
 v_type = per_set[1,"no_bus_type"] # number of vehicle types
+fleetsize_list = Int64[] # fleet size for each vehilce 
 
+println("v_tyope is $(v_type)")
 for i_v in 1:v_type
      Q_max = reduce(vcat, [Q_max, fill(vehicleInfo[i_v, "cap_veh"], vehicleInfo[i_v, "fleet_size"])])
      E_max = reduce(vcat, [E_max, fill(vehicleInfo[i_v, "cap_fuel"], vehicleInfo[i_v, "fleet_size"])])
@@ -88,11 +90,15 @@ for i_v in 1:v_type
      PC = reduce(vcat, [PC, fill(vehicleInfo[i_v, "daily_purchase_cost"], vehicleInfo[i_v, "fleet_size"])])
      EnergyP = reduce(vcat, [EnergyP, fill(vehicleInfo[i_v, "cost_energy"], vehicleInfo[i_v, "fleet_size"])])
      emission = reduce(vcat, [emission, fill(vehicleInfo[i_v, "CO2"], vehicleInfo[i_v, "fleet_size"])])
+     fleetsize_list = reduce(vcat, [fleetsize_list, vehicleInfo[i_v, "fleet_size"]])
 end
 
-# Create the VehicleInfo structure
-vehicle_par = VehiclePar(Q_max, E_max, E_min, E_init, beta, PC, EnergyP, emission, μ, v_k)
+println("E_max is $(E_max)")
+println("The list of fleet size are $(fleetsize_list)")
+println("$fleetsize_list[2]")
 
+# Create the VehicleInfo structure
+vehicle_par = VehiclePar(Q_max, E_max, E_min, E_init, beta, PC, EnergyP, emission, μ, v_k,fleetsize_list)
 ##################################
 # Chargers specification parameters   
 ###################################

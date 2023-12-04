@@ -209,7 +209,7 @@ function MILP_new(arcs_processed,Arcs_output,nodes_output,charger_par,
 
 
     #CO2 emission constraints
-    @constraint(m, sum(emission[k]*dist[arc]*x[k,arc] for k in 1:n_k for arc in Arcs) <= MaxCO2*TargetCO2*0.01)
+    @constraint(m, sum(emission[k]*dist[arc]*x[k,arc] for k in 1:n_kg for arc in Arcs) <= MaxCO2*TargetCO2*0.01)
     # @constraint(m, t >= (sum(emission[k]*dist[arc]*x[k,arc] for k in 1:n_k for arc in Arcs) - MaxCO2*TargetCO2*0.01))
 
     """
@@ -231,10 +231,11 @@ function MILP_new(arcs_processed,Arcs_output,nodes_output,charger_par,
         )
     bestobj = objective_value(m)
     gap = MOI.get(m, MOI.RelativeGap())
-    used_gv = count(usedbus .> n_k-n_kg) 
-    used_ev = count(usedbus .<= n_k-n_kg) 
+    used_gv = count(usedbus .<= n_kg) 
+    used_ev_1 = count((usedbus .> n_kg) .& (usedbus .<= n_k + vehicle_par.fleetsize_list[2]))
+    used_ev_2 = count(usedbus .> n_k+vehicle_par.fleetsize_list[2])
      # Save to summary of key outputs
-    keyoutput_vec = [bestobj,gap,used_gv,used_ev,totalCO2,total_chg_time,runtime]
+    keyoutput_vec = [bestobj,gap,used_gv,used_ev_1,used_ev_2,totalCO2,total_chg_time,runtime]
     #save keyoutput_vec to a file just in case
     rightnow = Dates.format(Dates.now(), "yyyy_mm_dd_HHMMSS")
     fn_keyout = Resultfolder * string("Keyout_", n_bs, "bs_", n_c, "c_", n_k, "v_", n_kg, "gv_", TargetCO2, "%CO2_", rightnow)

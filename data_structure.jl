@@ -29,6 +29,7 @@ struct VehiclePar
     emission::Vector{Float64}   # CO2 emission
     μ::Float64                  # Service time per person
     v_k::Float64                # Bus speed (km/min)
+    fleetsize_list::Vector{Int64} # Fleet size for each vehicle
 end
 struct ChargerPar
     n_charger::Int64    # Number of chargers
