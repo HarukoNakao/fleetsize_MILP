@@ -212,6 +212,25 @@ function MILP_new(arcs_processed,Arcs_output,nodes_output,charger_par,
     @constraint(m, sum(emission[k]*dist[arc]*x[k,arc] for k in 1:n_kg for arc in Arcs) <= MaxCO2*TargetCO2*0.01)
     # @constraint(m, t >= (sum(emission[k]*dist[arc]*x[k,arc] for k in 1:n_k for arc in Arcs) - MaxCO2*TargetCO2*0.01))
 
+    ################################################################
+     # new constraints, 2.12.2023
+     ################################################################
+    #  @show(vec_K[1],vec_K[2],vec_K[1][1])
+    for type_v in 1:n_type_veh 
+        length_n_veh_type_v = length(vec_K[type_v])
+        if length_n_veh_type_v>1
+          for ss in 1:length_n_veh_type_v-1
+              k, k1 = vec_K[type_v][ss], vec_K[type_v][ss+1]
+            #   @show(k, k1)
+              @constraint(m, sum(x[k, (0, j)] -  x[k1, (0, j)] for j in V if (0, j) in Arcs)>=0)
+          end
+       end
+     end
+     @constraint(m, [k in K_all], M0 * sum(x[k, (0, j)] for j in V if (0, j) in Arcs) >=  sum(x[k, (i, j)] for (i, j) in Arcs_0))
+     @constraint(m, [(i, j) in Arcs_two_directions], sum(x[k, (i, j)] + x[k, (j, i)] for k in K_all) <=1 ) # this constr can be replaced by the first precedence constraint of Cordeau 2006
+
+    ####################################################
+    
     """
         Optimisation 
     """
