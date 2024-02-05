@@ -232,8 +232,8 @@ function MILP_new(arcs_processed,Arcs_output,nodes_output,charger_par,
     bestobj = objective_value(m)
     gap = MOI.get(m, MOI.RelativeGap())
     used_gv = count(usedbus .<= n_kg) 
-    used_ev_1 = count((usedbus .> n_kg) .& (usedbus .<= n_k + vehicle_par.fleetsize_list[2]))
-    used_ev_2 = count(usedbus .> n_k+vehicle_par.fleetsize_list[2])
+    used_ev_1 = count((usedbus .> n_kg) .& (usedbus .<= n_kg + vehicle_par.fleetsize_list[2]))
+    used_ev_2 = count(usedbus .> n_kg+vehicle_par.fleetsize_list[2])
      # Save to summary of key outputs
     keyoutput_vec = [bestobj,gap,used_gv,used_ev_1,used_ev_2,totalCO2,total_chg_time,runtime]
     #save keyoutput_vec to a file just in case

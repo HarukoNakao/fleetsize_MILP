@@ -16,7 +16,7 @@ Resultfolder = "result\\"
 
 #Input 
 per_init = 0.5 #scaling initial chargig state from max capacity
-TargetCO2 = 50#% of CO2 emission compared to the max CO2 emission 
+TargetCO2 = 10#% of CO2 emission compared to the max CO2 emission 
 flag_new_formulation = true
 n_charger_dummies = 3 #number of dummy chargers 
 #CO2 emission only with GVs 
@@ -44,7 +44,7 @@ column_names = ["BKobj", "GAP_LB", "GV", "EV_1", "EV_2", "CO2", "TotalChargeTime
 keyoutput_sum = DataFrame(; [(Symbol(name)) => Float64[] for name in column_names]...)
 
 
-for ite in 1:2#:length(requests_set)
+for ite in 1:length(requests_set)
     n_customer = ite*10 #chose the number of requests 
     input_request = folderName * "c_$(n_customer).csv" 
     MaxCO2 = vec_MaxCO2[Int64(ite)]#set the max CO2 emission
@@ -56,8 +56,8 @@ for ite in 1:2#:length(requests_set)
    
     nodes_output = dummy_create(total_num, n_charger_dummies, requestInfo, chargerInfo, xyInfo, coordinates_info, vehicle_par)
     arcs_output = Arcs_create(nodes_output, vehicle_par.v_k, total_num.n_c)
-    arcs_processed = preprocess(arcs_output, nodes_output.nodes_tw)
-    #arcs_processed = preprocess_new(arcs_output, nodes_output.nodes_tw, nodes_output.nodesPU,nodes_output.nodes_od,nodes_output.max_travel_time,nodes_output.nodesDO)
+    #arcs_processed = preprocess(arcs_output, nodes_output.nodes_tw)
+    arcs_processed = preprocess_new(arcs_output, nodes_output.nodes_tw, nodes_output.nodesPU,nodes_output.nodes_od,nodes_output.max_travel_time,nodes_output.nodesDO)
  
     keyoutput_vec = MILP_new(arcs_processed,
      arcs_output, nodes_output, charger_par, vehicle_par, total_num, flag_new_formulation,
