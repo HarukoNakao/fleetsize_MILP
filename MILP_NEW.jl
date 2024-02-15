@@ -1,6 +1,7 @@
 function MILP_new(arcs_processed,Arcs_output,nodes_output,charger_par,
     vehicle_par,total_num,flag_new_formulation,cputimelimit,MaxCO2,TargetCO2,
-    chargerInfo,requestInfo, xyInfo, Resultfolder,nodes_coordinates,CoordinatesInfo)
+    chargerInfo,requestInfo, xyInfo, Resultfolder,nodes_coordinates,CoordinatesInfo,
+    incomp_req_chr)
        
     # variables passed from dummy_creates function
     nodes_bs_ts = nodes_output.nodes_bs_ts
@@ -42,6 +43,8 @@ function MILP_new(arcs_processed,Arcs_output,nodes_output,charger_par,
     E_min = vehicle_par.E_min
     E_init = vehicle_par.E_init
     T_max = total_num.T_max
+    n_type_veh =vehicle_par.v_type
+    fleetsize_list = vehicle_par.fleetsize_list
     
 
    """
@@ -64,6 +67,7 @@ function MILP_new(arcs_processed,Arcs_output,nodes_output,charger_par,
     # other parameters
     VoWT = 1
     #ω = 20 # 20 minutes loss for customers to take public transport
+    M0 = length(Arcs)
     M1, = findmax(Q_max) # big M
     M2 = T_max # big M
     M3, = findmax(E_max)
@@ -147,17 +151,19 @@ function MILP_new(arcs_processed,Arcs_output,nodes_output,charger_par,
     @constraint(m, [k = 1:n_k, i in nodes], Q_max[k] >= Q[k, i])
 
     # Beginning of service time and arrival time [19]-[25]
-    @constraint(m, [k = 1:n_k], B[k, 0] == 0.0)   #beginning of the service time at the origin depot is 0
-    @constraint(m, [k = 1:n_k, i in nodes], B[k, i] >= nodes_tw[i][1]) #[25] bus k should start the service later than the earliest time window
+   @constraint(m, [k = 1:n_k], B[k, 0] == 0.0)   #beginning of the service time at the origin depot is 0
+   @constraint(m, [k = 1:n_k, i in nodes], B[k, i] >= nodes_tw[i][1]) #[25] bus k should start the service later than the earliest time window
     @constraint(m, [k = 1:n_k, i in nodes], B[k, i] <= nodes_tw[i][2]) #[25]bus k should start the service earlier than the latest time window 
-
+   
     @constraint(m, [k = 1:n_k, (i, j) in [(i, j) for (i, j) in Arcs if i ∉ nodes_charger]],
-        B[k, j] >= B[k, i] + u[i] + travel_time[(i, j)] - M2 * (1 - x[k, (i, j)])) #[19]service starting time constraints at nodes EXCEPT charging stations          
+       B[k, j] >= B[k, i] + u[i] + travel_time[(i, j)] - M2 * (1 - x[k, (i, j)])) #[19]service starting time constraints at nodes EXCEPT charging stations          
     @constraint(m, [k = 1:n_k, (s, j) in [(s, j) for (s, j) in Arcs if s in nodes_charger]],
         B[k, j] >= B[k, s] + u[s] + tau[k, s] + travel_time[(s, j)] - M2 * (1 - x[k, (s, j)])) #[20]service starting time constraints at charging stations 
-
+ 
     #EQ[26]: Passenger in-vehicle time constraints 
     @constraint(m, [k = 1:n_k, r = 1:n_c], B[k, nodes_od[r][2]] - B[k, nodes_od[r][1]] - μ <= max_travel_time[r])
+       
+###########################
 
     # State of charge/gasolin 
     @constraint(m, [k = n_kg+1:n_k], E[k, 0] == E_init[k]) # EQ[24] initial charging state is charged in max
@@ -175,6 +181,7 @@ function MILP_new(arcs_processed,Arcs_output,nodes_output,charger_par,
         E[k, j] >= E[k, s] + charger_speed[s] * tau[k, s] - beta[k] * dist[(s, j)] - M3 * (1 - x[k, (s, j)]))
     @constraint(m, [k = n_kg+1:n_k, (s, j) in [(i, j) for (i, j) in Arcs if i in nodes_charger]],
         E[k, j] <= E[k, s] + charger_speed[s] * tau[k, s] - beta[k] * dist[(s, j)] + M3 * (1 - x[k, (s, j)]))
+
 
     # added on 11/3/2023 tai-yu
     if flag_new_formulation == true
@@ -206,29 +213,40 @@ function MILP_new(arcs_processed,Arcs_output,nodes_output,charger_par,
             end
         end
     end
-
-
+    
+    @show(incomp_req_chr)
+    
+    #### New constraints added on 05/02/2024 ####
+    @constraint(m, [(r_1,r_2) in incomp_req_chr, s in nodes_charger], 
+    sum(x[k, (nodes_od[r_1][2],s)] + x[k, (s,nodes_od[r_2][1])] + x[k, (nodes_od[r_2][2], s)]+ x[k, (s,nodes_od[r_1][1])] for k in n_kg+1:n_k)<=1) 
+    #############
+    
     #CO2 emission constraints
     @constraint(m, sum(emission[k]*dist[arc]*x[k,arc] for k in 1:n_kg for arc in Arcs) <= MaxCO2*TargetCO2*0.01)
-    # @constraint(m, t >= (sum(emission[k]*dist[arc]*x[k,arc] for k in 1:n_k for arc in Arcs) - MaxCO2*TargetCO2*0.01))
 
     ################################################################
-     # new constraints, 2.12.2023
+     # #NEW CONSTRAINTS 05/02/2024 (modified new constraints, 2.12.2023 by Tai-Yu)
      ################################################################
     #  @show(vec_K[1],vec_K[2],vec_K[1][1])
+    #  for each type of vehicle m, the k-th vehicle of that type is used before the k+1-th vehicle of the same type
     for type_v in 1:n_type_veh 
-        length_n_veh_type_v = length(vec_K[type_v])
-        if length_n_veh_type_v>1
-          for ss in 1:length_n_veh_type_v-1
-              k, k1 = vec_K[type_v][ss], vec_K[type_v][ss+1]
+        if fleetsize_list[type_v]>1
+            if type_v == 1
+                vec_K = collect(1:fleetsize_list[type_v])
+            else
+                vec_K = collect(1+cumsum(fleetsize_list)[type_v-1]:cumsum(fleetsize_list)[type_v])
+            end
+          for ss in 1:fleetsize_list[type_v]-1
+              k, k1 = vec_K[ss], vec_K[ss+1]
             #   @show(k, k1)
               @constraint(m, sum(x[k, (0, j)] -  x[k1, (0, j)] for j in V if (0, j) in Arcs)>=0)
           end
        end
      end
-     @constraint(m, [k in K_all], M0 * sum(x[k, (0, j)] for j in V if (0, j) in Arcs) >=  sum(x[k, (i, j)] for (i, j) in Arcs_0))
-     @constraint(m, [(i, j) in Arcs_two_directions], sum(x[k, (i, j)] + x[k, (j, i)] for k in K_all) <=1 ) # this constr can be replaced by the first precedence constraint of Cordeau 2006
 
+     #if a vehicle does not leave the depot, this vehicle is not used to serve the requests
+     @constraint(m, [k in K], M0 * sum(x[k, (0, j)] for j in V if (0, j) in Arcs) >=  sum(x[k, (i, j)] for (i, j) in Arcs if i in V_N && j in V_0)) 
+     #@constraint(m, [(i, j) in Arcs_two_directions], sum(x[k, (i, j)] + x[k, (j, i)] for k in K_all) <=1 ) # this constr can be replaced by the first precedence constraint of Cordeau 2006
     ####################################################
     
     """
@@ -241,6 +259,10 @@ function MILP_new(arcs_processed,Arcs_output,nodes_output,charger_par,
     """
        Getting and saving the key  outputs 
     """
+    #check if we get the optimal solution
+    status = termination_status(m)
+    if has_values(m) == 1
+        
     usedbus, total_chg_time,totalCO2 = process_results(
         chargerInfo, nodes_coordinates,
         requestInfo, xyInfo, x_init,y_init,
@@ -255,6 +277,9 @@ function MILP_new(arcs_processed,Arcs_output,nodes_output,charger_par,
     used_ev_2 = count(usedbus .> n_kg+vehicle_par.fleetsize_list[2])
      # Save to summary of key outputs
     keyoutput_vec = [bestobj,gap,used_gv,used_ev_1,used_ev_2,totalCO2,total_chg_time,runtime]
+    else #otherwise, return NaN
+        keyoutput_vec = [NaN,NaN,NaN,NaN,NaN,NaN,NaN,runtime]
+    end
     #save keyoutput_vec to a file just in case
     rightnow = Dates.format(Dates.now(), "yyyy_mm_dd_HHMMSS")
     fn_keyout = Resultfolder * string("Keyout_", n_bs, "bs_", n_c, "c_", n_k, "v_", n_kg, "gv_", TargetCO2, "%CO2_", rightnow)

@@ -80,7 +80,7 @@ v_k = per_set[1, "vehicle_speed"]  # Bus speed km/min
 v_type = per_set[1,"no_bus_type"] # number of vehicle types
 fleetsize_list = Int64[] # fleet size for each vehilce 
 
-println("v_tyope is $(v_type)")
+println("v_type is $(v_type)")
 for i_v in 1:v_type
      Q_max = reduce(vcat, [Q_max, fill(vehicleInfo[i_v, "cap_veh"], vehicleInfo[i_v, "fleet_size"])])
      E_max = reduce(vcat, [E_max, fill(vehicleInfo[i_v, "cap_fuel"], vehicleInfo[i_v, "fleet_size"])])
@@ -98,7 +98,7 @@ println("The list of fleet size are $(fleetsize_list)")
 println("$fleetsize_list[2]")
 
 # Create the VehicleInfo structure
-vehicle_par = VehiclePar(Q_max, E_max, E_min, E_init, beta, PC, EnergyP, emission, μ, v_k,fleetsize_list)
+vehicle_par = VehiclePar(Q_max, E_max, E_min, E_init, beta, PC, EnergyP, emission, μ, v_k,fleetsize_list,v_type)
 ##################################
 # Chargers specification parameters   
 ###################################

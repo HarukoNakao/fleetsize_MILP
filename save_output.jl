@@ -84,7 +84,7 @@ Resultfolder = resultfolder * "c_$(n_c)\\"
     scatter!((nodes_coordinates[0][1], nodes_coordinates[0][2]),
         xlims=(-10000, 10000), ylims=(-10000, 10000),
         label="Depot", markersize=8, markershape=:star, color=:Green)
-    plot!(legend=:outerright, legendcolumns=3)
+    plot!(legend=:outerbottom, legendcolumns=3)
     scatter!((xyInfo[activeBS, "x"], xyInfo[activeBS, "y"]), label="Stops", markershape=:circle, color=:blue, series_annotations=text.(requestInfo[:, "id_request"], :bottom))
     scatter!((x_init[n_bs+1:n_ts+n_bs], y_init[n_bs+1:n_ts+n_bs]), label="Transit stops", markershape=:square, color=:red)
 
@@ -102,7 +102,7 @@ Resultfolder = resultfolder * "c_$(n_c)\\"
         scatter!((nodes_coordinates[0][1], nodes_coordinates[0][2]),
             xlims=(-10000, 10000), ylims=(-10000, 10000),
             label="Depot", markersize=8, markershape=:star, color=:Green)
-        plot!(legend=:outerright, legendcolumns=3)
+        plot!(legend=:outerbottom, legendcolumns=3)
         scatter!((xyInfo[activeBS, "x"], xyInfo[activeBS, "y"]), label="Stops", markershape=:circle, color=:blue, series_annotations=text.(requestInfo[:, "id_request"], :bottom))
         scatter!((x_init[n_bs+1:n_ts+n_bs], y_init[n_bs+1:n_ts+n_bs]), label="Transit stops", markershape=:square, color=:red)
 
